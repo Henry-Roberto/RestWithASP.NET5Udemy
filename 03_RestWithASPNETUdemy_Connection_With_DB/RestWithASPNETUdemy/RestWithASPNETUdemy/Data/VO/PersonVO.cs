@@ -1,17 +1,29 @@
-﻿
+﻿using RestWithASPNETUdemy.Hypermedia;
+using RestWithASPNETUdemy.Hypermedia.Abstract;
+using System.Collections.Generic;
+using System.Text.Json.Serialization;
+
 namespace RestWithASPNETUdemy.Data.VO
 {
-    public class PersonVO
+    public class PersonVO : ISupportsHyperMedia
     {
+        // JsonPropertyName - altera o nome do campo no JSON
+        // JsonIgnore - Ignora o campo para retorno do JSON
+
+        //[JsonPropertyName("code")] 
         public long Id { get; set; }
 
+        //[JsonPropertyName("name")]
         public string FirstName { get; set; }
 
+        //[JsonPropertyName("last_name")]
         public string LastName { get; set; }
 
+        //[JsonIgnore]
         public string Address { get; set; }
 
+        //[JsonPropertyName("sex")]
         public string Gender { get; set; }
-
+        public List<HyperMediaLink> Links { get; set; } = new List<HyperMediaLink>();
     }
 }

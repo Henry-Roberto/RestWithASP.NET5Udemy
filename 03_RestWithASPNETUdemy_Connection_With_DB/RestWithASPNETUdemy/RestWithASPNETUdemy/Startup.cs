@@ -12,6 +12,11 @@ using Serilog;
 using System;
 using System.Collections.Generic;
 using RestWithASPNETUdemy.Repository.Generic;
+using Microsoft.Net.Http.Headers;
+using RestWithASPNETUdemy.Hypermedia.Filters;
+using RestWithASPNETUdemy.Hypermedia.Enricher;
+using Microsoft.OpenApi.Models;
+using Microsoft.AspNetCore.Rewrite;
 
 namespace RestWithASPNETUdemy
 {
@@ -34,6 +39,13 @@ namespace RestWithASPNETUdemy
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddCors(options => options.AddDefaultPolicy(builder =>
+            {
+                builder.AllowAnyOrigin()
+                .AllowAnyMethod()
+                .AllowAnyHeader();
+            }));
+
             services.AddControllers();
 
             //Configurations for DB MySQL
@@ -45,8 +57,39 @@ namespace RestWithASPNETUdemy
                 MigrateDataBase(connection);
             }
 
+            // Service para a conversão de dados recebidos via em XML - utilizando o NuGet Microsoft.AspNetCore.Mvc.Formatters.Xml
+            services.AddMvc(options =>
+            {
+                options.RespectBrowserAcceptHeader = true;
+                options.FormatterMappings.SetMediaTypeMappingForFormat("xml", MediaTypeHeaderValue.Parse("application/xml"));
+                options.FormatterMappings.SetMediaTypeMappingForFormat("json", MediaTypeHeaderValue.Parse("application/json"));
+            })
+            .AddXmlSerializerFormatters();
+
+            var filterOptions = new HyperMediaFilterOptions();
+            filterOptions.ContentResponseEnricherList.Add(new PersonEnricher());
+            filterOptions.ContentResponseEnricherList.Add(new BookEnricher());
+
+            services.AddSingleton(filterOptions);
+
             //Verioning API
             services.AddApiVersioning();
+
+            services.AddSwaggerGen(c =>
+            {
+                c.SwaggerDoc("v1",
+                    new OpenApiInfo
+                    {
+                        Title = "REST API's From 0 to Azure with ASP.NET Core 5 and Docker",
+                        Version = "v1",
+                        Description = "API RESTful developed in course 'REST API's From 0 to Azure with ASP.NET Core 5 and Docker'",
+                        Contact = new OpenApiContact
+                        {
+                            Name = "Henry R. de Oliveira",
+                            Url = new Uri("https://github.com/Henry-Roberto")
+                        }
+                    });
+            });
 
             //Dependency Injection
             services.AddScoped<IPersonBusiness, PersonBusinessImplementation>();
@@ -69,11 +112,27 @@ namespace RestWithASPNETUdemy
 
             app.UseRouting();
 
+            //Configuração do CORS precisa estar abaixo de UseHttpsRedirection e UseRouting, e acima do UseEndpoints
+            app.UseCors();
+
+            app.UseSwagger();
+
+            app.UseSwaggerUI(c =>
+            {
+                c.SwaggerEndpoint("/swagger/v1/swagger.json", 
+                    "REST API's From 0 to Azure with ASP.NET Core 5 and Docker - v1");
+            });
+
+            var options = new RewriteOptions();
+            options.AddRedirect("^$", "swagger");
+            app.UseRewriter(options);
+
             app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
+                endpoints.MapControllerRoute("DefaultApi", "{controller=values}/{id?}");
             });
         }
 
