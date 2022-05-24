@@ -18,7 +18,5 @@ deploy:
     docker tag rest-with-asp-net-udemy-db:latest $DOCKER_USERNAME/rest-with-asp-net-udemy-db:$TRAVIS_JOB_ID;
     docker push $DOCKER_USERNAME/rest-with-asp-net-udemy:$TRAVIS_JOB_ID;
     docker push $DOCKER_USERNAME/rest-with-asp-net-udemy-db:$TRAVIS_JOB_ID;
-  on:
-    branch: main
 notifications:
   email: false
