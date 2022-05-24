@@ -24,15 +24,31 @@ namespace RestWithASPNETUdemy.Controllers
             _personBussines = personBusiness;
         }
 
-        [HttpGet]
+        // ANTIGO FindAll
+        //[HttpGet] 
+        //[ProducesResponseType((200), Type = typeof(List<PersonVO>))]
+        //[ProducesResponseType(204)]
+        //[ProducesResponseType(400)]
+        //[ProducesResponseType(401)]
+        //[TypeFilter(typeof(HyperMediaFilter))]
+        //public IActionResult Get()
+        //{
+        //    return Ok(_personBussines.FindAll());
+        //}
+
+        [HttpGet("{sortDirection}/{pageSize}/{page}")]
         [ProducesResponseType((200), Type = typeof(List<PersonVO>))]
         [ProducesResponseType(204)]
         [ProducesResponseType(400)]
         [ProducesResponseType(401)]
         [TypeFilter(typeof(HyperMediaFilter))]
-        public IActionResult Get()
+        public IActionResult Get(
+            [FromQuery] string name,
+            string sortDirection,
+            int pageSize,
+            int page)
         {
-            return Ok(_personBussines.FindAll());
+            return Ok(_personBussines.FindWithPagedSearch(name, sortDirection, pageSize, page));
         }
 
         [HttpGet("{id}")]
@@ -44,6 +60,19 @@ namespace RestWithASPNETUdemy.Controllers
         public IActionResult Get(long id)
         {
             var person = _personBussines.FindByID(id);
+            if (person == null) return NotFound();
+            return Ok(person);
+        }
+
+        [HttpGet("findPersonByName")]
+        [ProducesResponseType((200), Type = typeof(PersonVO))]
+        [ProducesResponseType(204)]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(401)]
+        [TypeFilter(typeof(HyperMediaFilter))]
+        public IActionResult Get([FromQuery] string firstName, [FromQuery] string lastName)
+        {
+            var person = _personBussines.FindByName(firstName, lastName);
             if (person == null) return NotFound();
             return Ok(person);
         }
@@ -68,6 +97,18 @@ namespace RestWithASPNETUdemy.Controllers
         {
             if (person == null) return BadRequest();
             return Ok(_personBussines.Update(person));
+        }
+
+        [HttpPatch("{id}")]
+        [ProducesResponseType((200), Type = typeof(PersonVO))]
+        [ProducesResponseType(204)]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(401)]
+        [TypeFilter(typeof(HyperMediaFilter))]
+        public IActionResult Patch(long id)
+        {
+            var person = _personBussines.Disable(id);
+            return Ok(person);
         }
 
         [HttpDelete("{id}")]
