@@ -1,5 +1,6 @@
 ﻿using RestWithASPNETUdemy.Data.Converter.Implementations;
 using RestWithASPNETUdemy.Data.VO;
+using RestWithASPNETUdemy.Hypermedia.Utils;
 using RestWithASPNETUdemy.Model;
 using RestWithASPNETUdemy.Repository;
 using System.Collections.Generic;
@@ -21,6 +22,32 @@ namespace RestWithASPNETUdemy.Bussines.Implementations
         public List<BookVO> FindAll()
         {
             return _converter.Parse(_repository.FindAll());
+        }
+
+        public PagedSearchVO<BookVO> FindWithPagedSearch(string title, string sortDirection, int pageSize, int page)
+        {
+            var sort = (!string.IsNullOrWhiteSpace(sortDirection)) && !sortDirection.Equals("desc") ? "asc" : "desc";
+            var size = (pageSize < 1) ? 10 : pageSize;
+            var offset = page > 0 ? (page - 1) * size : 0;
+
+            string query = @"SELECT * FROM books p WHERE 1 = 1";
+            if (!string.IsNullOrWhiteSpace(title)) query += $" AND p.title LIKE '%{title}%' ";
+            query += $" ORDER BY p.title {sort} limit {size} offset {offset} ";
+
+            string countQuery = @"SELECT COUNT(*) FROM books p WHERE 1 = 1";
+            if (!string.IsNullOrWhiteSpace(title)) countQuery += $" AND p.title LIKE '%{title}%' ";
+
+            var persons = _repository.FindWithPagedSearch(query);
+            int totalResults = _repository.GetCount(countQuery);
+
+            return new PagedSearchVO<BookVO>
+            {
+                CurrentPage = page,
+                List = _converter.Parse(persons),
+                PageSize = size,
+                SortDirections = sort,
+                TotalResults = totalResults
+            };
         }
 
         public BookVO FindByID(long id)

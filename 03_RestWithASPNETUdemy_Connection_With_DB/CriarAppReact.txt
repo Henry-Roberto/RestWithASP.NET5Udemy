@@ -1,0 +1,6 @@
+CRIA O PROJETO
+npx create-react-app nomedaaplicacao
+
+
+Add route manager
+npm install react-router-dom

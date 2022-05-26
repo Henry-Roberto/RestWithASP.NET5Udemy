@@ -98,10 +98,10 @@ namespace RestWithASPNETUdemy
             var connection = Configuration["MySQLConnection:MySQLConnectionString"];
             services.AddDbContext<MySQLContext>(options => options.UseMySql(connection));
 
-            //if (Environment.IsDevelopment()) //Evolve para execução dos datasets e migrations
-            //{
-            //    MigrateDataBase(connection);
-            //}
+            if (Environment.IsDevelopment()) //Evolve para execução dos datasets e migrations
+            {
+                MigrateDataBase(connection);
+            }
 
             // Service para a conversão de dados recebidos via em XML - utilizando o NuGet Microsoft.AspNetCore.Mvc.Formatters.Xml
             services.AddMvc(options =>
@@ -213,3 +213,27 @@ namespace RestWithASPNETUdemy
         }
     }
 }
+
+
+//POSTGRES
+/*
+ - INSTALAR NUGET PACKAGE
+     Npgsql.EntityFrameworCore.PostgreSQL
+ 
+ - Alterar o arquivo appsettings.json
+     "PostgreeConnection": {
+        "PostgreeConnectionString": "Server=localhost;Userid=postgres;Password:admin123;DataBase=rest_with_aps_net_udemy;"
+     }
+ 
+ - Verificar migrations
+    Alterar o nome do arquivo MySQLContext.cs da pasta ...Model/Context
+
+ - Alterar Connection do Startup.cs para :
+    var connection = Configuration["PostgreeConnection:PostgreeConnectionString"];
+    services.AddDbContext<PostgreSQLContext>(options => options.UseNgpsql(connection));
+    
+
+    - EVOLVE
+        var evolveConnection = new Npgsql.NpgsqlConnection(connection);
+
+*/
