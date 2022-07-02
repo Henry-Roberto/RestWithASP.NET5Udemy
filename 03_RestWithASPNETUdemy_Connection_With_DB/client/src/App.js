@@ -1,11 +1,11 @@
-import React, {useState} from 'react';
+import React from 'react';
 
 import './global.css'
 
-import Rotas from './routes';
+import AppRoutes from './routes';
 
 export default function App() {
   return(
-      <Rotas/>
+      <AppRoutes/>
   );
 }
